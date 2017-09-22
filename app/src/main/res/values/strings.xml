@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Kuharicav4</string>
+
+    <string-array name="categories_array">
+        <item>Hladno predjelo</item>
+        <item>Toplo predjelo</item>
+        <item>Kruh i peciva</item>
+        <item>Juha</item>
+        <item>Umak</item>
+        <item>Salata</item>
+        <item>Glavno jelo</item>
+        <item>Prilog</item>
+        <item>Desert</item>
+    </string-array>
+
+
+    <string-array name="prTime_array">
+        <item>10 min</item>
+        <item>15 min</item>
+        <item>20 min</item>
+        <item>30 min</item>
+        <item>45 min</item>
+        <item>60 min</item>
+        <item>75 min</item>
+        <item>90 min</item>
+        <item>120 min</item>
+    </string-array>
+</resources>

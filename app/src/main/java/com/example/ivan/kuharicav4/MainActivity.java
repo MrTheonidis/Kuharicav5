@@ -10,9 +10,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,12 +23,18 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Button btnTpredjelo, btnHlPredjelo, btnUmak, btnSalata, btnGjelo, btnJuha, btnKruh, btnPrilog, btnDesert, bRefresh;
     private RecyclerView mRecipesList;
+
+   // private EditText etSearch;
 
     private DatabaseReference mDatabase;
     private DatabaseReference mDatabaseUsers;
@@ -64,6 +73,17 @@ public class MainActivity extends AppCompatActivity {
         mDatabase.keepSynced(true);
 
         mRecipesList = (RecyclerView) findViewById(R.id.recipes_list);
+        btnJuha = (Button) findViewById(R.id.bFilterJuha);
+        btnHlPredjelo = (Button) findViewById(R.id.bFilterHpredjelo);
+        btnTpredjelo = (Button) findViewById(R.id.bFilterTpredjelo);
+        btnUmak = (Button) findViewById(R.id.bFilterUmak);
+        btnSalata = (Button) findViewById(R.id.bFilterSalata);
+        btnGjelo = (Button) findViewById(R.id.bFilterGjelo);
+        btnKruh = (Button) findViewById(R.id.bFilterKruh);
+        btnPrilog = (Button) findViewById(R.id.bFilterPrilog);
+        btnDesert = (Button) findViewById(R.id.bFilterDesert);
+        bRefresh = (Button) findViewById(R.id.bRefresh);
+       // etSearch = (EditText) findViewById(R.id.search);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setReverseLayout(true);
@@ -72,7 +92,819 @@ public class MainActivity extends AppCompatActivity {
         mRecipesList.setHasFixedSize(true);
         mRecipesList.setLayoutManager(layoutManager);
         checkUserExist();
+
+
+
+        /////////////////////////////////////////////////////////////////////filtriranje
+        btnJuha.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery = mDatabase.orderByChild("categories").equalTo("Juha");
+                mQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+        btnHlPredjelo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery1 = mDatabase.orderByChild("categories").equalTo("Hladno predjelo");
+                mQuery1.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery1) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+
+        btnTpredjelo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery2 = mDatabase.orderByChild("categories").equalTo("Toplo predjelo");
+                mQuery2.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery2) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+
+        btnUmak.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery3 = mDatabase.orderByChild("categories").equalTo("Umak");
+                mQuery3.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery3) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+
+
+        btnSalata.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery4 = mDatabase.orderByChild("categories").equalTo("Salata");
+                mQuery4.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery4) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+        btnGjelo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery5 = mDatabase.orderByChild("categories").equalTo("Glavno jelo");
+                mQuery5.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery5) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+
+        btnKruh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery6 = mDatabase.orderByChild("categories").equalTo("Kruh i peciva");
+                mQuery6.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery6) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+        btnPrilog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery7 = mDatabase.orderByChild("categories").equalTo("Prilog");
+                mQuery7.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery7) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+        btnDesert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Query mQuery8 = mDatabase.orderByChild("categories").equalTo("Desert");
+                mQuery8.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                                    (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mQuery8) {
+                                @Override
+                                protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                                    final String post_key = getRef(position).getKey();
+                                    viewHolder.setTitle(model.getTitle());
+                                    //viewHolder.setDesc(model.getDesc());
+                                    viewHolder.setImage(getApplicationContext(), model.getImage());
+                                    viewHolder.setUsername(model.getUsername());
+
+                                    viewHolder.setLikeBtn(post_key);
+
+                                    viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                            singleBlogIntent.putExtra("recipes_id", post_key);
+                                            startActivity(singleBlogIntent);
+                                        }
+                                    });
+
+
+                                    viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            mProcessLike = true;
+
+
+                                            mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    if (mProcessLike) {
+                                                        if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                            mProcessLike = false;
+
+                                                        } else {
+                                                            mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                            mProcessLike = false;
+                                                        }
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                }
+                                            });
+
+                                        }
+                                    });
+                                }
+                            };
+
+                            mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                            firebaseRecyclerAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
+
+
+        bRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                FirebaseRecyclerAdapter<Recipes, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Recipes, BlogViewHolder>
+                        (Recipes.class, R.layout.recipes_row, BlogViewHolder.class, mDatabase) {
+                    @Override
+                    protected void populateViewHolder(BlogViewHolder viewHolder, Recipes model, final int position) {
+
+                        final String post_key = getRef(position).getKey();
+                        viewHolder.setTitle(model.getTitle());
+                        //viewHolder.setDesc(model.getDesc());
+                        viewHolder.setImage(getApplicationContext(), model.getImage());
+                        viewHolder.setUsername(model.getUsername());
+
+                        viewHolder.setLikeBtn(post_key);
+
+                        viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                Intent singleBlogIntent = new Intent(MainActivity.this, RecipesSingleActivity.class);
+                                singleBlogIntent.putExtra("recipes_id", post_key);
+                                startActivity(singleBlogIntent);
+                            }
+                        });
+
+
+                        viewHolder.mLikeBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+
+                                mProcessLike = true;
+
+
+                                mDatabaseLike.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                        if (mProcessLike) {
+                                            if (dataSnapshot.child(post_key).hasChild(mAuth.getCurrentUser().getUid())) {
+
+                                                mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).removeValue();
+
+                                                mProcessLike = false;
+
+                                            } else {
+                                                mDatabaseLike.child(post_key).child(mAuth.getCurrentUser().getUid()).setValue("RandomValue");
+
+                                                mProcessLike = false;
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
+
+                            }
+                        });
+                    }
+                };
+                mRecipesList.setAdapter(firebaseRecyclerAdapter);
+                firebaseRecyclerAdapter.notifyDataSetChanged();
+            }
+        });
     }
+
+
+
+
+
 
     @Override
     protected void onStart() {
@@ -233,10 +1065,25 @@ public class MainActivity extends AppCompatActivity {
             post_username.setText(username);
         }
 
-        public void setImage(Context ctx, String image){
+        public void setImage(final Context ctx, final String image){
 
-            ImageView post_image = (ImageView) mView.findViewById(R.id.post_image);
-            Picasso.with(ctx).load(image).into(post_image);
+            final ImageView post_image = (ImageView) mView.findViewById(R.id.post_image);
+            //Picasso.with(ctx).load(image).into(post_image);
+
+            Picasso.with(ctx).load(image).networkPolicy(NetworkPolicy.OFFLINE).into(post_image, new Callback() {
+                @Override
+                public void onSuccess() {
+
+
+                }
+
+                @Override
+                public void onError() {
+
+                    Picasso.with(ctx).load(image).into(post_image);
+
+                }
+            });
         }
 
 

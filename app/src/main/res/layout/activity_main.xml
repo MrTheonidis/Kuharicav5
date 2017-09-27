@@ -1,13 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.ivan.kuharicav4.MainActivity">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/bFilterHpredjelo"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Hl. predjelo"
+            android:padding="2dp"
+            />
+
+        <Button
+            android:id="@+id/bFilterTpredjelo"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="T. predjelo"
+            android:padding="2dp"
+            />
+
+        <Button
+            android:id="@+id/bFilterKruh"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Kruh"
+            android:padding="2dp"
+            />
+
+
+        <Button
+            android:id="@+id/bFilterJuha"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Juha"
+            android:padding="2dp"
+            />
+
+        <Button
+            android:id="@+id/bFilterUmak"
+            android:padding="2dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Umak"
+            />
+
+        <Button
+            android:id="@+id/bFilterSalata"
+            android:padding="2dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Salata"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        >
+
+        <Button
+            android:id="@+id/bFilterGjelo"
+            android:padding="2dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Gl. jelo"
+            />
+
+        <Button
+            android:id="@+id/bFilterPrilog"
+            android:padding="2dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Prilog"
+            />
+
+        <Button
+            android:id="@+id/bFilterDesert"
+            android:padding="2dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="Desert"
+            />
+
+        <Button
+            android:id="@+id/bRefresh"
+            android:padding="2dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="svi recepti"
+            />
+
+    </LinearLayout>
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -15,4 +109,5 @@
 
     </android.support.v7.widget.RecyclerView>
 
-</RelativeLayout>
+
+</LinearLayout>
